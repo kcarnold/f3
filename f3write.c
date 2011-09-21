@@ -19,7 +19,6 @@
 uint64_t fill_buffer (void *buf, size_t size, uint64_t offset)
 {
   uint8_t *p, *ptr_next_sector, *ptr_end;
-  struct drand48_data state;
 
   /* Assumed that size is not zero and a sector-size multiple. */
   assert(size % SECTOR_SIZE == 0);
@@ -29,11 +28,11 @@ uint64_t fill_buffer (void *buf, size_t size, uint64_t offset)
   while (p < ptr_end)
   {
     memmove(p, &offset, sizeof(offset));
-    srand48_r(offset, &state);
+    srand48(offset);
     ptr_next_sector = p + SECTOR_SIZE;
     p += sizeof(offset);
     for (; p < ptr_next_sector; p += sizeof(long int)) 
-      lrand48_r(&state, (long int *)p);
+      (*(long int *)p) = lrand48();
     assert (p == ptr_next_sector);
     offset += SECTOR_SIZE;
   }

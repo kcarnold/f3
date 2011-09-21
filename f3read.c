@@ -53,14 +53,14 @@ void validate_file (const char *path, const char *filename,
   int offset_match, error_count;
   size_t sectors_read;
   uint64_t offset, expected_offset;
-  struct drand48_data state;
   long int rand_int;
-  char full_fn[PATH_MAX];
+  char *full_fn;
 
-  snprintf(full_fn, PATH_MAX, "%s/%s", path, filename);
+  asprintf(&full_fn, "%s/%s", path, filename);
   f = fopen(full_fn, "rb");
   if (!f)
     err(errno, "Can't open file %s", full_fn);
+  free(full_fn);
 
   ptr_end = sector + SECTOR_SIZE;
   sectors_read = fread(sector, SECTOR_SIZE, 1, f);
@@ -71,12 +71,12 @@ void validate_file (const char *path, const char *filename,
     offset = *((uint64_t *)sector);
     offset_match = offset == expected_offset;
     
-    srand48_r(offset, &state);
+    srand48(offset);
     p = sector + sizeof(offset);
     error_count = 0;
     for (; error_count <= TOLERANCE && p < ptr_end; p += sizeof(long int))
     {
-      lrand48_r(&state, &rand_int);
+      rand_int = lrand48();
       if (rand_int != *((long int *)p))
         error_count++;
     }
